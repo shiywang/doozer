@@ -560,19 +560,19 @@ def images_rebase(runtime, stream, version, release, repo_type, message, push):
 
     state.record_image_finish(lstate)
 
-    failed = []
-    for img, status in lstate['images'].iteritems():
-        if isinstance(status, str):
-            failed.append(img)
 
     if lstate['status'] == state.STATE_FAIL:
         raise DoozerFatalError('One or more required images failed. See state.yaml')
+    elif lstate['status'] == state.STATE_PART:
+        failed = []
+        for img, status in lstate['images'].iteritems():
+            if isinstance(status, str):
+                failed.append(img)
+        msg = "The following non-critical images failed to rebase:\n{}".format('\n'.join(failed))
+        yellow_print(msg)
     elif lstate['success'] == 0:
         raise DoozerFatalError('No required images were specified, but all images failed.')
 
-    if failed:
-        msg = "The following non-critical images failed to rebase:\n{}".format('\n'.join(failed))
-        yellow_print(msg)
 
 
 @cli.command("images:foreach", short_help="Run a command relative to each distgit dir.")
